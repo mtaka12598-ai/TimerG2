@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Target Timer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Montserrat', -apple-system, sans-serif;
+    }
+
+    body {
+      background: #005B4F;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 24px) 24px env(safe-area-inset-bottom, 24px);
+      color: #111820;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 390px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .num-font {
+      font-family: 'Bebas Neue', 'Impact', sans-serif !important;
+      letter-spacing: 2.4px;
+      line-height: 1;
+    }
+
+    .display-card {
+      background: #FFF4D6;
+      border-radius: 26px;
+      padding: 26px 22px 24px;
+      text-align: center;
+      border: 1px solid rgba(17, 24, 32, 0.08);
+      box-shadow: 0 14px 34px rgba(20, 30, 40, 0.10);
+    }
+
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #5f6b76;
+      letter-spacing: 1px;
+    }
+
+    .info-bar #current-clock {
+      font-size: 21px;
+      color: #111820;
+    }
+
+    .countdown-box {
+      margin: 12px 0 10px;
+    }
+
+    .countdown-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2.4px;
+      color: #8a96a3;
+    }
+
+    .countdown-timer {
+      font-size: clamp(82px, 24vw, 106px);
+      color: #0a0f14;
+      margin: 6px 0 4px;
+    }
+
+    .target-box {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 8px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(17, 24, 32, 0.10);
+    }
+
+    .target-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: #5f6b76;
+    }
+
+    .target-digits {
+      font-size: 30px;
+      color: #1a232d;
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .key-btn {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid rgba(17, 24, 32, 0.08);
+      background: #FFF4D6;
+      height: 62px;
+      border-radius: 18px;
+      font-size: 30px;
+      color: #111820;
+      box-shadow: 0 5px 14px rgba(20, 30, 40, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .key-btn:active {
+      background: #f4e7c2;
+      transform: scale(0.96);
+    }
+
+    .key-btn.action-clear {
+      font-family: 'Montserrat', sans-serif !important;
+      font-size: 18px;
+      font-weight: 700;
+      color: #c73a3a;
+      background: #FFF4D6;
+      border-color: rgba(200, 80, 80, 0.3);
+    }
+
+    .key-btn.action-back {
+      font-family: 'Montserrat', sans-serif !important;
+      font-size: 21px;
+      color: #5f6b76;
+    }
+
+    .control-area {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-main {
+      flex: 1;
+      height: 58px;
+      border-radius: 18px;
+      border: none;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 2.4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-main:active {
+      transform: scale(0.96);
+    }
+
+    .btn-start {
+      background: #173A35;
+      color: #FFF4D6;
+      border: none;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+    }
+
+    .btn-stop {
+      background: #c43b3b;
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(160, 40, 40, 0.3);
+      display: none;
+    }
+
+    .alarming {
+      animation: pulseAlert 0.7s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulseAlert {
+      from { background: #005B4F; }
+      to { background-color: #e07070; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="display-card">
+    <div class="info-bar">
+      <span>NOW</span>
+      <span id="current-clock" class="num-font">--:--:--</span>
+    </div>
+
+    <div class="countdown-box">
+      <div class="countdown-label">REMAINING</div>
+      <div class="countdown-timer num-font" id="countdown-display">--:--:--</div>
+    </div>
+
+    <div class="target-box">
+      <span class="target-label">TARGET</span>
+      <span class="target-digits num-font" id="target-digits">_ _ : _ _</span>
+    </div>
+  </div>
+
+  <div class="keypad-grid" id="keypad">
+    <button type="button" class="key-btn num-font" data-val="1">1</button>
+    <button type="button" class="key-btn num-font" data-val="2">2</button>
+    <button type="button" class="key-btn num-font" data-val="3">3</button>
+    <button type="button" class="key-btn num-font" data-val="4">4</button>
+    <button type="button" class="key-btn num-font" data-val="5">5</button>
+    <button type="button" class="key-btn num-font" data-val="6">6</button>
+    <button type="button" class="key-btn num-font" data-val="7">7</button>
+    <button type="button" class="key-btn num-font" data-val="8">8</button>
+    <button type="button" class="key-btn num-font" data-val="9">9</button>
+    <button type="button" class="key-btn action-clear" id="btn-clear">AC</button>
+    <button type="button" class="key-btn num-font" data-val="0">0</button>
+    <button type="button" class="key-btn action-back" id="btn-back">⌫</button>
+  </div>
+
+  <div class="control-area">
+    <button type="button" class="btn-main btn-start" id="start-btn">START</button>
+    <button type="button" class="btn-main btn-stop" id="stop-btn">STOP</button>
+  </div>
+</div>
+
+<script>
+  let rawDigits = "";
+  let timerInterval = null;
+  let targetDate = null;
+  let audioCtx = null;
+  let alarmInterval = null;
+
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('current-clock').textContent =
+      `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  function renderInput() {
+    let padded = rawDigits.padEnd(4, '_');
+    document.getElementById('target-digits').textContent =
+      `${padded.slice(0, 2)} : ${padded.slice(2, 4)}`;
+  }
+
+  // テンキー数字イベント
+  document.querySelectorAll('.key-btn[data-val]').forEach(btn => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (rawDigits.length < 4) {
+        rawDigits += btn.getAttribute('data-val');
+        renderInput();
+      }
+    });
+  });
+
+  // ACボタン
+  document.getElementById('btn-clear').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    rawDigits = "";
+    renderInput();
+  });
+
+  // BackSpaceボタン
+  document.getElementById('btn-back').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    rawDigits = rawDigits.slice(0, -1);
+    renderInput();
+  });
+
+  function playBeep() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.18);
+    } catch(e) {}
+  }
+
+  function startAlarmSound() {
+    document.body.classList.add('alarming');
+    playBeep();
+    alarmInterval = setInterval(playBeep, 400);
+  }
+
+  function stopAlarmSound() {
+    document.body.classList.remove('alarming');
+    if (alarmInterval) {
+      clearInterval(alarmInterval);
+      alarmInterval = null;
+    }
+  }
+
+  // START
+  document.getElementById('start-btn').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (rawDigits.length !== 4) {
+      alert("4桁の時刻を入力してください（例: 1530）");
+      return;
+    }
+
+    const hours = parseInt(rawDigits.slice(0, 2), 10);
+    const minutes = parseInt(rawDigits.slice(2, 4), 10);
+
+    if (hours > 23 || minutes > 59) {
+      alert("有効な時刻を入力してください（00:00〜23:59）");
+      return;
+    }
+
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    const now = new Date();
+    targetDate = new Date();
+    targetDate.setHours(hours, minutes, 0, 0);
+
+    if (targetDate.getTime() <= now.getTime()) {
+      targetDate.setDate(targetDate.getDate() + 1);
+    }
+
+    document.getElementById('start-btn').style.display = 'none';
+    document.getElementById('stop-btn').style.display = 'flex';
+    document.getElementById('keypad').style.opacity = '0.35';
+    document.getElementById('keypad').style.pointerEvents = 'none';
+
+    tick();
+    timerInterval = setInterval(tick, 1000);
+  });
+
+  function tick() {
+    const now = new Date();
+    const diff = targetDate.getTime() - now.getTime();
+
+    if (diff <= 0) {
+      document.getElementById('countdown-display').textContent = "00:00:00";
+      clearInterval(timerInterval);
+      timerInterval = null;
+      startAlarmSound();
+      return;
+    }
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+
+    document.getElementById('countdown-display').textContent =
+      `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  // STOP
+  document.getElementById('stop-btn').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    stopAlarmSound();
+    document.getElementById('start-btn').style.display = 'flex';
+    document.getElementById('stop-btn').style.display = 'none';
+    document.getElementById('keypad').style.opacity = '1';
+    document.getElementById('keypad').style.pointerEvents = 'auto';
+    document.getElementById('countdown-display').textContent = "--:--:--";
+  });
+</script>
+
+</body>
+</html>
